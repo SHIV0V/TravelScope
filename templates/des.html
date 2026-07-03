@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>City Guide - Restaurants & Information</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <!-- Leaflet CSS -->
+   
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
       :root {
@@ -33,7 +33,7 @@
         padding: 0 20px;
       }
 
-      /* Back Button */
+     
       .back-button {
         position: fixed;
         top: 20px;
@@ -53,7 +53,7 @@
         transform: translateY(-2px);
       }
 
-      /* Home Button */
+      
       .home-button {
         position: fixed;
         top: 20px;
@@ -108,10 +108,10 @@
         height: 20px;
       }
 
-      /* Map Widget */
+      
       .map-widget {
         position: fixed;
-        top: 80px; /* Adjust based on the weather button's position */
+        top: 80px; 
         right: 20px;
         z-index: 1000;
         width: 300px;
@@ -126,7 +126,7 @@
         height: 100%;
       }
 
-      /* Hero Section */
+      
       .hero {
         height: 100vh;
         background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
@@ -152,7 +152,7 @@
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
       }
 
-      /* City Info Section */
+      
       .city-info {
         padding: 80px 0;
         background-color: white;
@@ -173,7 +173,7 @@
         margin: 0 auto 3rem;
       }
 
-      /* Travel Button */
+      
       .travel-button {
         position: absolute;
         top: 20px;
@@ -201,7 +201,7 @@
       .hotel-button {
          position: absolute;
          top: 20px;
-         right: 160px; /* Adjust based on the position of the Travel button */
+         right: 160px; 
          padding: 10px 20px;
          font-size: 1rem;
          border: none;
@@ -222,7 +222,7 @@
         box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
       }
 
-      /* Button Group */
+      
       .button-group {
        position: absolute;
        top: 20px;
@@ -230,7 +230,7 @@
        display: flex;
        gap: 10px;
       }
-      /* Restaurants Section */
+      
       .restaurants {
         padding: 80px 0;
         background-color: var(--light-gray);
@@ -243,7 +243,7 @@
         color: var(--primary-color);
       }
 
-      /* Sort Button and Slider */
+      
       .sort-container {
         position: absolute;
         top: 2400px;
@@ -282,8 +282,8 @@
         border-radius: 10px;
         padding: 10px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        display: none; /* Hidden by default */
-        flex-direction: row; /* Side by side */
+        display: none; 
+        flex-direction: row; 
         align-items: center;
         gap: 10px;
       }
@@ -456,7 +456,7 @@
         }
       }
 
-      /* Responsive Design */
+      
       @media (max-width: 768px) {
         .hero-content h1 {
           font-size: 2.5rem;
@@ -513,7 +513,7 @@
         border-radius: 10px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
-        /* Hotel Button */
+        
 
       }
     </style>
@@ -551,7 +551,7 @@
       </div>
     </section>
 
-    <!-- Weather Dashboard -->
+    
     <div class="container">
       <h1>Weather</h1>
       <select id="citySelect1">
@@ -589,8 +589,7 @@
       </div>
     </div>
 
-    <!-- Map Section -->
-   <!-- Map Section -->
+   
 <section class="map-section">
   <div class="container">
     <h2>Map of {{ city.name }}</h2>
@@ -598,24 +597,24 @@
   </div>
 </section>
 
-<!-- Leaflet JS -->
+
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    // Initialize the map
-    const cityLat = parseFloat("{{ city.latitude }}"); // Latitude from Flask
-    const cityLon = parseFloat("{{ city.longitude }}"); // Longitude from Flask
+    
+    const cityLat = parseFloat("{{ city.latitude }}"); 
+    const cityLon = parseFloat("{{ city.longitude }}"); 
 
     if (!isNaN(cityLat) && !isNaN(cityLon)) {
-      const map = L.map('map').setView([cityLat, cityLon], 12); // Adjust zoom level as needed
+      const map = L.map('map').setView([cityLat, cityLon], 12); 
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
       }).addTo(map);
 
-      // Add a marker for the city
+      
       L.marker([cityLat, cityLon]).addTo(map)
-        .bindPopup("{{ city.name | e }}") // Use `| e` for escaping to prevent XSS
+        .bindPopup("{{ city.name | e }}") 
         .openPopup();
     } else {
       console.error("Invalid latitude or longitude for the city.");
@@ -623,7 +622,7 @@
   });
 </script>
 
-    <!-- Restaurants Section -->
+    
     <section class="restaurants">
       <div class="container">
         <h2>Popular Restaurants</h2>
@@ -651,7 +650,7 @@
       </div>
     </section>
 
-    <!-- Sort Button and Slider -->
+    
     <div class="sort-container">
       <button class="sort-button" id="sort-button">
         <i class="fas fa-sort"></i> Sort
@@ -673,7 +672,7 @@
       </div>
     </div>
 
-    <!-- Leaflet JS -->
+    
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function () {
@@ -687,9 +686,9 @@
 
         const citySelect1 = document.getElementById('citySelect1');
         const realTime = document.getElementById('realTime');
-        let timezoneOffset = 0; // Default timezone offset (UTC)
+        let timezoneOffset = 0; 
 
-        // Function to fetch and display weather data
+        
         function fetchAndDisplayWeather(city) {
           if (!city) return;
 
@@ -707,7 +706,7 @@
                 return;
               }
 
-              // Update the weather display
+              
               const weatherDays = document.querySelectorAll('.weather-day');
               weatherDays[0].innerHTML = `
                 <h3>Today</h3>
@@ -731,7 +730,7 @@
                 <p>Humidity: ${data.day_after_tomorrow.humidity}%</p>
               `;
 
-              // Update the timezone offset
+              
               timezoneOffset = data.timezone_offset;
             })
             .catch(error => {
@@ -739,7 +738,7 @@
             });
         }
 
-        // Function to map weather descriptions to icons
+        
         function getWeatherIcon(description) {
           const weatherMap = {
             'clear sky': 'wi-day-sunny',
@@ -757,20 +756,20 @@
           return weatherMap[description.toLowerCase()] || 'wi-day-sunny';
         }
 
-        // Automatically select the current city and fetch weather data
-        const selectedCity = "{{ city.name }}"; // Current city name from the template
+        
+        const selectedCity = "{{ city.name }}"; 
         if (selectedCity) {
           citySelect1.value = selectedCity;
-          fetchAndDisplayWeather(selectedCity); // Fetch weather data for the selected city
+          fetchAndDisplayWeather(selectedCity); 
         }
 
-        // Event listener for dropdown change
+        
         citySelect1.addEventListener('change', function () {
           const selectedCity = this.value;
-          fetchAndDisplayWeather(selectedCity); // Fetch weather data for the selected city
+          fetchAndDisplayWeather(selectedCity); 
         });
 
-        // Like button functionality
+        
         likeButtons.forEach(button => {
           button.addEventListener('click', function () {
             const restaurantId = this.getAttribute('data-restaurant-id');
@@ -792,16 +791,16 @@
           });
         });
 
-        // Toggle slider visibility
+        
         sortButton.addEventListener('click', function () {
           sliderContainer.style.display = sliderContainer.style.display === 'flex' ? 'none' : 'flex';
         });
 
-        // Highlight selected price and filter restaurants
+        
         priceSlider.addEventListener('input', function () {
           const selectedPrice = parseInt(this.value);
 
-          // Highlight the selected price
+          
           sliderValues.forEach(span => {
             span.classList.remove('highlight');
             if (span.textContent === selectedPrice.toString() || (selectedPrice === 1000 && span.textContent === '1000+')) {
@@ -809,7 +808,7 @@
             }
           });
 
-          // Filter restaurants based on the selected price
+          
           restaurantCards.forEach(restaurant => {
             const price = parseInt(restaurant.getAttribute('data-price'));
             if (selectedPrice === 1000 || price <= selectedPrice) {
@@ -820,31 +819,31 @@
           });
         });
 
-        // Initialize the map
-        const cityLat = parseFloat("{{ city.latitude }}"); // Replace with your city's latitude
-        const cityLon = parseFloat("{{ city.longitude }}"); // Replace with your city's longitude
+        
+        const cityLat = parseFloat("{{ city.latitude }}"); 
+        const cityLon = parseFloat("{{ city.longitude }}"); 
 
-        const map = L.map('map').setView([cityLat, cityLon], 12); // Adjust zoom level as needed
+        const map = L.map('map').setView([cityLat, cityLon], 12); 
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // Add a marker for the city
+        
         L.marker([cityLat, cityLon]).addTo(map)
-          .bindPopup("{{ city.name | e }}") // Use `| e` for escaping to prevent XSS
+          .bindPopup("{{ city.name | e }}") 
           .openPopup();
 
-        // Function to update real-time clock
+        
         function updateRealTime() {
           const now = new Date();
-          const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000); // Convert to UTC
-          const localTime = new Date(utcTime + (timezoneOffset * 1000)); // Adjust for timezone
+          const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000); 
+          const localTime = new Date(utcTime + (timezoneOffset * 1000)); 
           const timeString = localTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           realTime.textContent = `Local Time: ${timeString}`;
         }
 
-        // Update the clock every second
+        
         setInterval(updateRealTime, 1000);
       });
     </script>

@@ -108,7 +108,7 @@
                     .then(response => response.json())
                     .then(cities => {
                         const citySelect = document.getElementById('city_id');
-                        citySelect.innerHTML = '<option value="">Select City</option>'; // Clear existing options
+                        citySelect.innerHTML = '<option value="">Select City</option>'; 
                         cities.forEach(city => {
                             const option = document.createElement('option');
                             option.value = city[0];
@@ -127,7 +127,7 @@
     <div class="form-container">
         <h1>Add {{ entity_type }}</h1>
         <form method="POST" enctype="multipart/form-data">
-            <!-- If adding a city or restaurant, choose a country -->
+           
             {% if entity_type == 'city' or entity_type == 'restaurant' %}
                 <label for="country_id">Select Country:</label>
                 <select name="country_id" id="country_id" onchange="fetchCities(this.value)">
@@ -138,7 +138,7 @@
                 </select>
             {% endif %}
 
-            <!-- If adding a restaurant, also choose a city -->
+            
             {% if entity_type == 'restaurant' %}
                 <label for="city_id">Select City:</label>
                 <select name="city_id" id="city_id">
@@ -149,19 +149,19 @@
                 </select>
             {% endif %}
 
-            <!-- Add code field for country and city -->
+            
             {% if entity_type == 'country' or entity_type == 'city' %}
                 <label for="code">Code:</label>
                 <input type="text" id="code" name="code" required>
             {% endif %}
 
-            <!-- Add description field for city and restaurant -->
+            
             {% if entity_type == 'city' or entity_type == 'restaurant' %}
                 <label for="description">Description:</label>
                 <textarea id="description" name="description" rows="4" required></textarea>
             {% endif %}
 
-            <!-- Add link and average price fields for restaurant -->
+            
             {% if entity_type == 'restaurant' %}
                 <label for="link">Link:</label>
                 <input type="text" id="link" name="link" required>
@@ -184,7 +184,7 @@
         </form>
         <button class="back-button" onclick="window.location.href='/'">Back</button>
 
-        <!-- Display existing data for reference with delete options -->
+        
         <div class="existing-data">
             <h2>Existing Data</h2>
             {% if entity_type == 'country' %}

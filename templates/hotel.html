@@ -214,33 +214,33 @@
     </div>
 
     <script>
-        // Set minimum date to today
+       
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('checkinDate').min = today;
         document.getElementById('checkoutDate').min = today;
 
-        // Update checkout date minimum when check-in date changes
+        
         document.getElementById('checkinDate').addEventListener('change', function() {
             document.getElementById('checkoutDate').min = this.value;
         });
 
-        // Form submission handling
+        
         document.getElementById('hotelForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const location = document.getElementById("location").value.trim();
             const checkinDate = document.getElementById("checkinDate").value;
             const checkoutDate = document.getElementById("checkoutDate").value;
 
-            // Validate required fields
+            
             if (!location || !checkinDate || !checkoutDate) {
                 alert("Please fill in all required fields.");
                 return;
             }
 
-            // Generate the Booking.com URL
+            
             const bookingURL = `https://www.booking.com/searchresults.en-gb.html?ss=${encodeURIComponent(location)}&checkin=${checkinDate}&checkout=${checkoutDate}&group_adults=2&no_rooms=1&group_children=0`;
 
-            // Open the Booking.com URL in a new tab
+            
             window.open(bookingURL, '_blank');
         });
     </script>

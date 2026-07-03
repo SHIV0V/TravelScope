@@ -23,7 +23,7 @@
         .back-button {
          position: absolute;
          top: 20px;
-          left: 20px; /* Positioned on the left side */
+          left: 20px; 
          background: rgba(255, 255, 255, 0.473);
          padding: 8px 15px;
          border-radius: 8px;
@@ -91,16 +91,16 @@
             margin-bottom: 1rem;
         }
         .temperature {
-            font-size: 1.5rem; /* Increased font size */
-            font-weight: 700; /* Thicker font weight */
+            font-size: 1.5rem; 
+            font-weight: 700; 
             margin-bottom: 0.5rem;
         }
         .description {
-            font-weight: 600; /* Slightly bolder */
+            font-weight: 600; 
             margin-bottom: 0.5rem;
         }
         .weather-symbol {
-            font-size: 1.5rem; /* Size of the symbol */
+            font-size: 1.5rem; 
             margin-top: 0.5rem;
         }
         @media (max-width: 500px) {
@@ -156,25 +156,25 @@
         const citySelect = document.getElementById('citySelect');
         const realTime = document.getElementById('realTime');
         const body = document.body;
-        let timezoneOffset = 0; // Default timezone offset (UTC)
+        let timezoneOffset = 0; 
 
-        // Function to update real-time clock
+        
         function updateRealTime() {
             const now = new Date();
-            const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000); // Convert to UTC
-            const localTime = new Date(utcTime + (timezoneOffset * 1000)); // Adjust for timezone
+            const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000); 
+            const localTime = new Date(utcTime + (timezoneOffset * 1000)); 
             const timeString = localTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             realTime.textContent = `Local Time: ${timeString}`;
         }
 
-        // Update the clock every second
+        
         setInterval(updateRealTime, 1000);
 
         citySelect.addEventListener('change', function() {
             const selectedCity = this.value;
             if (!selectedCity) return;
 
-            // Fetch weather data for the selected city
+            
             fetch('/get_weather', {
                 method: 'POST',
                 headers: {
@@ -189,7 +189,7 @@
                     return;
                 }
 
-                // Update the weather display
+                
                 const weatherDays = document.querySelectorAll('.weather-day');
                 weatherDays[0].innerHTML = `
                     <h3>Today</h3>
@@ -213,10 +213,10 @@
                     <p>Humidity: ${data.day_after_tomorrow.humidity}%</p>
                 `;
 
-                // Update the timezone offset
+                
                 timezoneOffset = data.timezone_offset;
 
-                // Change the background image based on the city
+                
                 fetch('/get_city_image', {
                     method: 'POST',
                     headers: {
@@ -256,12 +256,12 @@
             return weatherMap[description.toLowerCase()] || 'wi-day-sunny';
         }
 
-        // Automatically trigger weather fetching if a city is pre-selected
+        
         document.addEventListener('DOMContentLoaded', function () {
             const selectedCity = "{{ selected_city }}";
             if (selectedCity) {
                 citySelect.value = selectedCity;
-                citySelect.dispatchEvent(new Event('change')); // Trigger the change event to fetch weather
+                citySelect.dispatchEvent(new Event('change')); 
             }
         });
     </script>

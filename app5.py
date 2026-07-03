@@ -3,14 +3,14 @@ import psycopg2
 import base64
 import requests
 from datetime import datetime
-from geopy.geocoders import Nominatim  # For geocoding
+from geopy.geocoders import Nominatim  
 
 app = Flask(__name__)
 
-# OpenWeather API Key
+
 API_KEY = '' #app key
 
-# Function to connect to the database
+
 def get_db_connection():
     conn = psycopg2.connect(
         user= "", #username
@@ -21,7 +21,7 @@ def get_db_connection():
     )
     return conn
 
-# Function to get latitude and longitude using city name
+#  get latitude and longitude using city name
 def get_lat_lon(city_name):
     geolocator = Nominatim(user_agent="city_guide_app")
     location = geolocator.geocode(city_name)
@@ -29,37 +29,37 @@ def get_lat_lon(city_name):
         return location.latitude, location.longitude
     return None, None
 
-# Route for the home page
+
 @app.route("/")
 def home():
     return render_template("start.html")
 
-# Route for the top page
+
 @app.route("/top")
 def top():
     return render_template("top.html")
 
-# Route for the travel page
+
 @app.route("/travel")
 def travel():
     print("inside travel")
-    city_code = request.args.get("city_code", "")  # Default to empty string if not found
+    city_code = request.args.get("city_code", "") 
     return render_template("travel.html", city_code=city_code)
 
 # Route for the hotel page
 @app.route("/hotel")
 def hotel():
     print("inside hotel")
-    city_code = request.args.get("city_code", "")  # Use "city_code" instead of "city_city"
-    city_name = request.args.get("city_name", "")  # Get the city name from the query parameters
-    print(f"City Code: {city_code}")  # Debugging statement
-    print(f"City Name: {city_name}")  # Debugging statement
+    city_code = request.args.get("city_code", "")  
+    city_name = request.args.get("city_name", "")  
+    print(f"City Code: {city_code}") 
+    print(f"City Name: {city_name}")  
     return render_template("hotel.html", city_code=city_code, city_name=city_name)
 
 # Route for the weather page
 @app.route("/weather")
 def weather():
-    # Connect to the database
+   
     conn = get_db_connection()
     cursor = conn.cursor()
     print("inside weather")
@@ -210,11 +210,11 @@ def city_details(city_id):
             "link": ink
         })
 
-    # Close database connection
+    
     cursor.close()
     conn.close()
 
-    # Render city details with restaurants and cities for the dropdown
+    
     return render_template("des.html", city=city_data, restaurants=restaurant_data, cities=cities)
 
 # Function to fetch weather data
@@ -228,17 +228,17 @@ def fetch_weather(city_name):
 
         data = response.json()
 
-        # Extract timezone offset (in seconds)
+        
         timezone_offset = data['city']['timezone']
 
-        # Extract current weather and next 2 days' forecast
+       
         current_weather = data['list'][0]
         tomorrow_weather = data['list'][8]
         day_after_tomorrow_weather = data['list'][16]
 
-        # Format the data
+       
         weather_data = {
-            'timezone_offset': timezone_offset,  # Timezone offset in seconds
+            'timezone_offset': timezone_offset,  
             'today': {
                 'temperature': current_weather['main']['temp'],
                 'description': current_weather['weather'][0]['description'],
@@ -264,7 +264,7 @@ def fetch_weather(city_name):
 # Route for the map page
 @app.route("/map")
 def map_page():
-    print("Map route accessed")  # Debugging statement
+    print("Map route accessed")  
     return render_template("indexM.html")
 
 # Route to handle weather data requests

@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
-        /* Home Widget CSS */
+        
         .home-widget {
             position: absolute;
             top: 20px;
@@ -19,7 +19,7 @@
             color: #007bff;
             cursor: pointer;
             transition: all 0.3s;
-            z-index: 1000; /* Ensure it's above the map */
+            z-index: 1000; 
             display: flex;
             align-items: center;
             justify-content: center;
@@ -35,7 +35,7 @@
             font-size: 20px;
         }
 
-        /* Rest of your existing CSS */
+        
         body { 
             font-family: Arial, sans-serif; 
             text-align: center; 
@@ -193,7 +193,7 @@
 </head>
 <body>
 
-    <!-- Home Widget -->
+    
     <nav>
         <a href="{{ url_for('home') }}" class="home-widget"><i class="fas fa-home"></i></a>
         
@@ -266,19 +266,19 @@
         let history = JSON.parse(localStorage.getItem('history')) || [];
         let distanceLine = null;
 
-        // Load saved locations from localStorage
+        
         let savedLocations = JSON.parse(localStorage.getItem('locations')) || [];
         savedLocations.forEach(loc => {
             addMarker(loc.name, loc.desc, loc.imageUrl, loc.lat, loc.lng, false, loc.isSpecial);
         });
 
-        // Load liked locations into bucket list
+        
         updateBucketList();
 
-        // Load history
+        
         updateHistory();
 
-        // Event listener to detect clicks outside the map
+        
         document.addEventListener('click', function (event) {
             if (!event.target.closest('#map') && !event.target.closest('#formContainer') && !event.target.closest('.modal')) {
                 if (distanceLine) {
@@ -438,19 +438,19 @@
                     let from = fromData[0];
                     let to = toData[0];
 
-                    // Add markers for "From" and "To"
+                    
                     addMarker(from.display_name, "From Location", '', from.lat, from.lon, false);
                     addMarker(to.display_name, "To Location", '', to.lat, to.lon, false);
 
-                    // Calculate distance
+                    
                     let distance = map.distance([from.lat, from.lon], [to.lat, to.lon]) / 1000;
 
-                    // Add to history
+                    
                     history.push({ from: from.display_name, to: to.display_name, distance });
                     localStorage.setItem('history', JSON.stringify(history));
                     updateHistory();
 
-                    // Draw line between "From" and "To"
+                    
                     if (distanceLine) {
                         map.removeLayer(distanceLine);
                     }
@@ -459,7 +459,7 @@
                         { color: 'blue' }
                     ).addTo(map);
 
-                    // Zoom to fit both locations
+                    
                     let bounds = L.latLngBounds([[from.lat, from.lon], [to.lat, to.lon]]);
                     map.fitBounds(bounds);
                 } else {
@@ -495,18 +495,18 @@
                 });
             }
 
-            // Add to history
+            
             distances.forEach(d => history.push(d));
             localStorage.setItem('history', JSON.stringify(history));
             updateHistory();
 
-            // Draw lines between selected points
+            
             if (distanceLine) {
                 map.removeLayer(distanceLine);
             }
             distanceLine = L.polyline(latLngs, { color: 'blue' }).addTo(map);
 
-            // Zoom to fit all selected points
+            
             let bounds = L.latLngBounds(latLngs);
             map.fitBounds(bounds);
         }

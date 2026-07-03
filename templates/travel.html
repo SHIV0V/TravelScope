@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Booking</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --background: rgba(240, 249, 255, 0.1);
+            --card-bg: rgba(255, 255, 255, 0.43);
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color:rgba(226, 232, 240, 0.47);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            object-fit: cover;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+
+        .booking-form {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transform: translateY(0);
+            transition: transform 0.2s ease-in-out;
+            backdrop-filter: blur(8px);
+        }
+
+        .booking-form:hover {
+            transform: translateY(-2px);
+        }
+
+        h2 {
+            color: var(--text-primary);
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-header p {
+            color: var(--text-secondary);
+            font-size: 0.975rem;
+        }
+
+        .trip-type {
+            background: var(--background);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            backdrop-filter: blur(4px);
+        }
+
+        .trip-type label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        input[type="text"],
+        input[type="date"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        input[type="radio"] {
+            width: 1.2rem;
+            height: 1.2rem;
+            accent-color: var(--primary-color);
+        }
+
+        .location-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .date-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .return-date {
+            opacity: 0;
+            height: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .return-date.visible {
+            opacity: 1;
+            height: auto;
+            pointer-events: all;
+        }
+
+        @media (max-width: 640px) {
+            .location-inputs,
+            .date-inputs {
+                grid-template-columns: 1fr;
+            }
+
+            .booking-form {
+                padding: 1.5rem;
+            }
+
+            .trip-type {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+            }
+        }
+
+        /* Custom styles for date input */
+        input[type="date"] {
+            position: relative;
+            cursor: pointer;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            position: absolute;
+            right: 1rem;
+            cursor: pointer;
+        }
+
+        /* Loading animation */
+        @keyframes loading {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        button.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        button.loading::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin: -10px 0 0 -10px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: loading 0.8s linear infinite;
+        }
+
+        .back-button {
+            margin-top: 1rem;
+            background: var(--text-secondary);
+        }
+
+        .back-button:hover {
+            background: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+
+    <video autoplay muted loop class="video-background">
+        <source src="{{ url_for('static', filename='videos/flight.mp4') }}" type="video/mp4">
+    </video>
+    <div class="overlay"></div>
+    
+    <div class="booking-form">
+        <div class="form-header">
+            <h2>✈️ Flight Booking</h2>
+            <p>Search hundreds of flight sites at once</p>
+        </div>
+        <form id="flightForm">
+            <div class="trip-type">
+                <label>
+                    <input type="radio" name="tripType" value="single" checked onclick="toggleReturnDate()">
+                    <span>Single Trip</span>
+                </label>
+                <label>
+                    <input type="radio" name="tripType" value="return" onclick="toggleReturnDate()">
+                    <span>Return Trip</span>
+                </label>
+            </div>
+
+            <div class="location-inputs">
+                <div class="form-group">
+                    <label for="origin">From</label>
+                    <input type="text" id="origin" name="origin" required placeholder="City or airport" list="airportList">
+                    <datalist id="airportList">
+                        <option value="MAA">MAA (Chennai International)</option>
+                        <option value="BLR">BLR (Kempegowda International)</option>
+                        <option value="TRV">TRV (Trivandrum International)</option>
+                    </datalist>
+                </div>
+            
+                <div class="form-group">
+                    <label for="destination">To</label>
+                    <input type="text" id="destination" name="destination" required placeholder="City or airport" value="{{ city_code if city_code else '' }}">
+                </div>
+            </div>
+
+            <div class="date-inputs">
+                <div class="form-group">
+                    <label for="departDate">Departure Date</label>
+                    <input type="date" id="departDate" name="departDate" required>
+                </div>
+
+                <div class="form-group return-date" id="returnDateGroup">
+                    <label for="returnDate">Return Date</label>
+                    <input type="date" id="returnDate" name="returnDate">
+                </div>
+            </div>
+
+            <button type="submit" id="searchButton">Search Flights</button>
+            <button type="button" class="back-button" onclick="window.history.back()">Back</button>
+        </form>
+    </div>
+
+    <script>
+        function toggleReturnDate() {
+            const returnDateGroup = document.getElementById('returnDateGroup');
+            const returnDate = document.getElementById('returnDate');
+            const tripType = document.querySelector('input[name="tripType"]:checked').value;
+            
+            if (tripType === 'return') {
+                returnDateGroup.classList.add('visible');
+                returnDate.required = true;
+            } else {
+                returnDateGroup.classList.remove('visible');
+                returnDate.required = false;
+            }
+        }
+
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('departDate').min = today;
+        document.getElementById('returnDate').min = today;
+
+        // Update return date minimum when departure date changes
+        document.getElementById('departDate').addEventListener('change', function() {
+            document.getElementById('returnDate').min = this.value;
+        });
+
+        // Form submission handling with loading state
+        document.getElementById('flightForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const fromCode = document.getElementById("origin").value.trim();
+            const toCode = document.getElementById("destination").value.trim();
+            const departureDate = document.getElementById("departDate").value;
+            const returnDate = document.getElementById("returnDate").value;
+            const tripType = document.querySelector('input[name="tripType"]:checked').value;
+
+            // Validate required fields
+            if (!fromCode || !toCode || !departureDate || (tripType === "return" && !returnDate)) {
+                alert("Please fill in all required fields.");
+                return;
+            }
+
+            // Generate the Skyscanner URL
+            let skyscannerURL = `https://skyscanner.net/g/referrals/v1/flights/day-view/?origin=${fromCode}&destination=${toCode}&outboundDate=${departureDate}&currency=INR&mediaPartnerId=2850210`;
+
+            // Add return date only if it's a round trip
+            if (tripType === "return") {
+                skyscannerURL += `&inboundDate=${returnDate}`;
+            }
+
+            // Open the Skyscanner URL in a new tab
+            window.open(skyscannerURL, '_blank');
+        });
+    </script>
+</body>
+</html>

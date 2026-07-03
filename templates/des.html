@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>City Guide - Restaurants & Information</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+      :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #3498db;
+        --text-color: #333;
+        --light-gray: #f5f5f5;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Arial', sans-serif;
+        line-height: 1.6;
+        color: var(--text-color);
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Back Button */
+      .back-button {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        background-color: white;
+        padding: 10px 20px;
+        border-radius: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        text-decoration: none;
+        color: var(--primary-color);
+        font-weight: bold;
+        transition: transform 0.3s ease;
+      }
+
+      .back-button:hover {
+        transform: translateY(-2px);
+      }
+
+      /* Home Button */
+      .home-button {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1000;
+        background-color: white;
+        padding: 10px 20px;
+        border-radius: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        text-decoration: none;
+        color: var(--primary-color);
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: transform 0.3s ease;
+      }
+
+      .home-button:hover {
+        transform: translateY(-2px);
+      }
+
+      .home-button svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .weather-button {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        background-color: white;
+        padding: 10px 20px;
+        border-radius: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        text-decoration: none;
+        color: var(--primary-color);
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: transform 0.3s ease;
+      }
+
+      .weather-button:hover {
+        transform: translateY(-2px);
+      }
+
+      .weather-button svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      /* Map Widget */
+      .map-widget {
+        position: fixed;
+        top: 80px; /* Adjust based on the weather button's position */
+        right: 20px;
+        z-index: 1000;
+        width: 300px;
+        height: 200px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+      }
+
+      #map {
+        width: 100%;
+        height: 100%;
+      }
+
+      /* Hero Section */
+      .hero {
+        height: 100vh;
+        background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+          url('data:image/jpeg;base64,{{ city.image }}');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+      }
+
+      .hero-content h1 {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .hero-content p {
+        font-size: 1.5rem;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      }
+
+      /* City Info Section */
+      .city-info {
+        padding: 80px 0;
+        background-color: white;
+        position: relative;
+      }
+
+      .city-info h2 {
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: var(--primary-color);
+      }
+
+      .city-info p {
+        font-size: 1.1rem;
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto 3rem;
+      }
+
+      /* Travel Button */
+      .travel-button {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        font-size: 1rem;
+        border: none;
+        border-radius: 30px;
+        background-color: var(--secondary-color);
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .travel-button:hover {
+        background-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .hotel-button {
+         position: absolute;
+         top: 20px;
+         right: 160px; /* Adjust based on the position of the Travel button */
+         padding: 10px 20px;
+         font-size: 1rem;
+         border: none;
+         border-radius: 30px;
+         background-color: var(--secondary-color);
+         color: white;
+         cursor: pointer;
+         transition: all 0.3s ease;
+         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+         display: flex;
+         align-items: center;
+         gap: 8px;
+      }
+
+      .hotel-button:hover {
+       background-color: var(--primary-color);
+       transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Button Group */
+      .button-group {
+       position: absolute;
+       top: 20px;
+       right: 20px;
+       display: flex;
+       gap: 10px;
+      }
+      /* Restaurants Section */
+      .restaurants {
+        padding: 80px 0;
+        background-color: var(--light-gray);
+      }
+
+      .restaurants h2 {
+        font-size: 2.5rem;
+        margin-bottom: 3rem;
+        text-align: center;
+        color: var(--primary-color);
+      }
+
+      /* Sort Button and Slider */
+      .sort-container {
+        position: absolute;
+        top: 2400px;
+        right: 20px;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+        z-index: 1000;
+      }
+
+      .sort-button {
+        padding: 10px 20px;
+        font-size: 1rem;
+        border: none;
+        border-radius: 30px;
+        background-color: var(--secondary-color);
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .sort-button:hover {
+        background-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .slider-container {
+        background-color: white;
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        display: none; /* Hidden by default */
+        flex-direction: row; /* Side by side */
+        align-items: center;
+        gap: 10px;
+      }
+
+      .slider {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100px;
+        height: 10px;
+        background: var(--light-gray);
+        outline: none;
+        border-radius: 5px;
+        transform: rotate(-90deg);
+        margin: 0 20px;
+      }
+
+      .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        background: var(--secondary-color);
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+
+      .slider::-webkit-slider-thumb:hover {
+        background: var(--primary-color);
+      }
+
+      .slider-values {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9rem;
+        color: var(--text-color);
+      }
+
+      .slider-values span {
+        transition: color 0.3s ease;
+      }
+
+      .slider-values span.highlight {
+        color: var(--secondary-color);
+        font-weight: bold;
+      }
+
+      .restaurant-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+      }
+
+      .restaurant-card {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+      }
+
+      .restaurant-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .restaurant-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+      }
+
+      .restaurant-card h3 {
+        padding: 1rem;
+        color: var(--primary-color);
+      }
+
+      .restaurant-card p {
+        padding: 0 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .rating {
+        padding: 0 1rem;
+        color: #f1c40f;
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .like-section {
+        padding: 0 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .like-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.2rem;
+        color: var(--primary-color);
+        transition: color 0.3s ease;
+      }
+
+      .like-button:hover {
+        color: var(--secondary-color);
+      }
+
+      .like-button .fa-thumbs-up {
+        margin-right: 5px;
+      }
+
+      .weather-display {
+        background: #f8fafc73;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .weather-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .weather-day {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.37);
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      .weather-day h3 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .weather-icon {
+        font-size: 2rem;
+        color: #2563eb;
+      }
+
+      .real-time {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+      }
+
+      .temperature {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      .description {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .weather-symbol {
+        font-size: 1.5rem;
+        margin-top: 0.5rem;
+      }
+
+      @media (max-width: 500px) {
+        .weather-container {
+          flex-direction: column;
+        }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .hero-content h1 {
+          font-size: 2.5rem;
+        }
+
+        .hero-content p {
+          font-size: 1.2rem;
+        }
+
+        .city-info h2,
+        .restaurants h2 {
+          font-size: 2rem;
+        }
+
+        .home-button {
+          padding: 8px 16px;
+          font-size: 0.9rem;
+        }
+
+        .travel-button,
+        .sort-button {
+          font-size: 0.9rem;
+          padding: 8px 16px;
+        }
+
+        .sort-container {
+          right: 10px;
+        }
+
+        .slider-container {
+          flex-direction: column;
+        }
+
+        .map-widget {
+          width: 200px;
+          height: 150px;
+        }
+      }
+      .map-section {
+        padding: 80px 0;
+        background-color: var(--light-gray);
+      }
+
+      .map-section h2 {
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: var(--primary-color);
+      }
+
+      #map {
+        width: 100%;
+        height: 400px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+        /* Hotel Button */
+
+      }
+    </style>
+  </head>
+  <body>
+    <a href="{{ url_for('home') }}" class="home-button">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+      Home
+    </a>
+    <a href="javascript:history.back()" class="back-button">
+      Back
+    </a>
+
+    <div class="hero">
+      <div class="hero-content">
+        <h1>Welcome to {{ city.name }}</h1>
+        
+      </div>
+    </div>
+
+    <section class="city-info">
+      <div class="container">
+        <h2>About {{ city.name }}</h2>
+        <p>{{ city.description }}</p>
+        <div class="button-group">
+          <button class="travel-button">
+            <nav><a href="{{ url_for('travel', city_code=city['code']) }}"><i class="fas fa-plane"></i> Travel</a></nav>
+          </button>
+          <button class="hotel-button">
+            <nav><a href="{{ url_for('hotel', city_code=city['code'], city_name=city['name']) }}"><i class="fas fa-hotel"></i> Hotel</a></nav>
+          </button>
+      </div>
+    </section>
+
+    <!-- Weather Dashboard -->
+    <div class="container">
+      <h1>Weather</h1>
+      <select id="citySelect1">
+        <option value="">Select a City</option>
+        {% for city_option in cities %}
+          <option value="{{ city_option[0] }}" {% if city_option[0] == city.name %}selected{% endif %}>
+            {{ city_option[0] }}
+          </option>
+        {% endfor %}
+      </select>
+      <div id="weatherDisplay" class="weather-display">
+        <div class="weather-container">
+          <div class="weather-day">
+            <h3>Today</h3>
+            <p class="temperature">--</p>
+            <p class="description">--</p>
+            <p class="weather-symbol">--</p>
+            <p>Humidity: --%</p>
+          </div>
+          <div class="weather-day">
+            <h3>Tomorrow</h3>
+            <p class="temperature">--</p>
+            <p class="description">--</p>
+            <p class="weather-symbol">--</p>
+            <p>Humidity: --%</p>
+          </div>
+          <div class="weather-day">
+            <h3>Day After</h3>
+            <p class="temperature">--</p>
+            <p class="description">--</p>
+            <p class="weather-symbol">--</p>
+            <p>Humidity: --%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map Section -->
+   <!-- Map Section -->
+<section class="map-section">
+  <div class="container">
+    <h2>Map of {{ city.name }}</h2>
+    <div id="map"></div>
+  </div>
+</section>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Initialize the map
+    const cityLat = parseFloat("{{ city.latitude }}"); // Latitude from Flask
+    const cityLon = parseFloat("{{ city.longitude }}"); // Longitude from Flask
+
+    if (!isNaN(cityLat) && !isNaN(cityLon)) {
+      const map = L.map('map').setView([cityLat, cityLon], 12); // Adjust zoom level as needed
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+
+      // Add a marker for the city
+      L.marker([cityLat, cityLon]).addTo(map)
+        .bindPopup("{{ city.name | e }}") // Use `| e` for escaping to prevent XSS
+        .openPopup();
+    } else {
+      console.error("Invalid latitude or longitude for the city.");
+    }
+  });
+</script>
+
+    <!-- Restaurants Section -->
+    <section class="restaurants">
+      <div class="container">
+        <h2>Popular Restaurants</h2>
+        <div class="restaurant-grid" id="restaurant-grid">
+          {% for restaurant in restaurants %}
+          <div class="restaurant-card" data-price="{{ restaurant.avg_price }}">
+            {% if restaurant.image %}
+            <img src="data:image/jpeg;base64,{{ restaurant.image }}" alt="{{ restaurant.name }}" />
+            {% else %}
+            <img src="https://via.placeholder.com/400x200" alt="{{ restaurant.name }}" />
+            {% endif %}
+            <h3>{{ restaurant.name }}</h3>
+            <p>{{ restaurant.description }}</p>
+            <div class="rating">★★★★☆</div>
+            <p>Average Price: ${{ restaurant.avg_price }}</p>
+            <a href="{{ restaurant.link }}" target="_blank">Visit Website</a>
+            <div class="like-section">
+              <button class="like-button" data-restaurant-id="{{ restaurant.id }}">
+                <i class="fas fa-thumbs-up"></i> <span class="like-count">{{ restaurant.likes }}</span>
+              </button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <!-- Sort Button and Slider -->
+    <div class="sort-container">
+      <button class="sort-button" id="sort-button">
+        <i class="fas fa-sort"></i> Sort
+      </button>
+      <div class="slider-container" id="slider-container">
+        <input type="range" min="100" max="1000" step="100" value="1000" class="slider" id="price-slider">
+        <div class="slider-values">
+          <span>1000+</span>
+          <span>900</span>
+          <span>800</span>
+          <span>700</span>
+          <span>600</span>
+          <span>500</span>
+          <span>400</span>
+          <span>300</span>
+          <span>200</span>
+          <span>100</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const likeButtons = document.querySelectorAll('.like-button');
+        const sortButton = document.getElementById('sort-button');
+        const sliderContainer = document.getElementById('slider-container');
+        const priceSlider = document.getElementById('price-slider');
+        const sliderValues = document.querySelectorAll('.slider-values span');
+        const restaurantGrid = document.getElementById('restaurant-grid');
+        const restaurantCards = Array.from(document.querySelectorAll('.restaurant-card'));
+
+        const citySelect1 = document.getElementById('citySelect1');
+        const realTime = document.getElementById('realTime');
+        let timezoneOffset = 0; // Default timezone offset (UTC)
+
+        // Function to fetch and display weather data
+        function fetchAndDisplayWeather(city) {
+          if (!city) return;
+
+          fetch('/get_weather', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ city: city }),
+          })
+            .then(response => response.json())
+            .then(data => {
+              if (data.error) {
+                alert(data.error);
+                return;
+              }
+
+              // Update the weather display
+              const weatherDays = document.querySelectorAll('.weather-day');
+              weatherDays[0].innerHTML = `
+                <h3>Today</h3>
+                <p class="temperature">${data.today.temperature}°C</p>
+                <p class="description">${data.today.description}</p>
+                <p class="weather-symbol"><i class="wi ${getWeatherIcon(data.today.description)}"></i></p>
+                <p>Humidity: ${data.today.humidity}%</p>
+              `;
+              weatherDays[1].innerHTML = `
+                <h3>Tomorrow</h3>
+                <p class="temperature">${data.tomorrow.temperature}°C</p>
+                <p class="description">${data.tomorrow.description}</p>
+                <p class="weather-symbol"><i class="wi ${getWeatherIcon(data.tomorrow.description)}"></i></p>
+                <p>Humidity: ${data.tomorrow.humidity}%</p>
+              `;
+              weatherDays[2].innerHTML = `
+                <h3>Day After</h3>
+                <p class="temperature">${data.day_after_tomorrow.temperature}°C</p>
+                <p class="description">${data.day_after_tomorrow.description}</p>
+                <p class="weather-symbol"><i class="wi ${getWeatherIcon(data.day_after_tomorrow.description)}"></i></p>
+                <p>Humidity: ${data.day_after_tomorrow.humidity}%</p>
+              `;
+
+              // Update the timezone offset
+              timezoneOffset = data.timezone_offset;
+            })
+            .catch(error => {
+              console.error('Error fetching weather data:', error);
+            });
+        }
+
+        // Function to map weather descriptions to icons
+        function getWeatherIcon(description) {
+          const weatherMap = {
+            'clear sky': 'wi-day-sunny',
+            'few clouds': 'wi-day-cloudy',
+            'scattered clouds': 'wi-cloud',
+            'broken clouds': 'wi-cloudy',
+            'shower rain': 'wi-showers',
+            'rain': 'wi-rain',
+            'light rain': 'wi-showers',
+            'thunderstorm': 'wi-thunderstorm',
+            'snow': 'wi-snow',
+            'mist': 'wi-fog',
+            'overcast clouds': 'wi-cloudy'
+          };
+          return weatherMap[description.toLowerCase()] || 'wi-day-sunny';
+        }
+
+        // Automatically select the current city and fetch weather data
+        const selectedCity = "{{ city.name }}"; // Current city name from the template
+        if (selectedCity) {
+          citySelect1.value = selectedCity;
+          fetchAndDisplayWeather(selectedCity); // Fetch weather data for the selected city
+        }
+
+        // Event listener for dropdown change
+        citySelect1.addEventListener('change', function () {
+          const selectedCity = this.value;
+          fetchAndDisplayWeather(selectedCity); // Fetch weather data for the selected city
+        });
+
+        // Like button functionality
+        likeButtons.forEach(button => {
+          button.addEventListener('click', function () {
+            const restaurantId = this.getAttribute('data-restaurant-id');
+            const likeCount = this.querySelector('.like-count');
+
+            fetch(`/like-restaurant/${restaurantId}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  likeCount.textContent = data.likes;
+                }
+              })
+              .catch(error => console.error('Error:', error));
+          });
+        });
+
+        // Toggle slider visibility
+        sortButton.addEventListener('click', function () {
+          sliderContainer.style.display = sliderContainer.style.display === 'flex' ? 'none' : 'flex';
+        });
+
+        // Highlight selected price and filter restaurants
+        priceSlider.addEventListener('input', function () {
+          const selectedPrice = parseInt(this.value);
+
+          // Highlight the selected price
+          sliderValues.forEach(span => {
+            span.classList.remove('highlight');
+            if (span.textContent === selectedPrice.toString() || (selectedPrice === 1000 && span.textContent === '1000+')) {
+              span.classList.add('highlight');
+            }
+          });
+
+          // Filter restaurants based on the selected price
+          restaurantCards.forEach(restaurant => {
+            const price = parseInt(restaurant.getAttribute('data-price'));
+            if (selectedPrice === 1000 || price <= selectedPrice) {
+              restaurant.style.display = 'block';
+            } else {
+              restaurant.style.display = 'none';
+            }
+          });
+        });
+
+        // Initialize the map
+        const cityLat = parseFloat("{{ city.latitude }}"); // Replace with your city's latitude
+        const cityLon = parseFloat("{{ city.longitude }}"); // Replace with your city's longitude
+
+        const map = L.map('map').setView([cityLat, cityLon], 12); // Adjust zoom level as needed
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Add a marker for the city
+        L.marker([cityLat, cityLon]).addTo(map)
+          .bindPopup("{{ city.name | e }}") // Use `| e` for escaping to prevent XSS
+          .openPopup();
+
+        // Function to update real-time clock
+        function updateRealTime() {
+          const now = new Date();
+          const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000); // Convert to UTC
+          const localTime = new Date(utcTime + (timezoneOffset * 1000)); // Adjust for timezone
+          const timeString = localTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          realTime.textContent = `Local Time: ${timeString}`;
+        }
+
+        // Update the clock every second
+        setInterval(updateRealTime, 1000);
+      });
+    </script>
+  </body>
+</html>

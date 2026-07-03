@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Top Visited Cities Worldwide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+      :root {
+        --primary-color: #2a3990;
+        --secondary-color: #f05454;
+        --background-color: #f8f9fa;
+        --card-bg: #ffffff;
+        --text-color: #333;
+        --shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      .moving-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background: linear-gradient(125deg, #e0f7fa, #f8f9fa, #e3f2fd);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+      }
+
+      @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      /* Hero Section */
+      .hero {
+        height: 100vh;
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+      }
+
+      .hero h1 {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        animation: fadeInUp 1s ease;
+      }
+
+      .hero p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+        animation: fadeInUp 1s ease 0.2s forwards;
+        opacity: 0;
+      }
+
+      .cta-btn {
+        display: inline-block;
+        background-color: var(--secondary-color);
+        color: white;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: var(--transition);
+        animation: fadeInUp 1s ease 0.4s forwards;
+        opacity: 0;
+      }
+
+      .cta-btn:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(240, 84, 84, 0.4);
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Rest of the existing styles */
+      .cities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+
+      .city-card {
+        background-color: var(--card-bg);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        position: relative;
+        height: 400px;
+        transform: translateY(50px);
+        opacity: 0;
+        animation: fadeIn 0.5s ease forwards;
+      }
+
+      .city-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      .city-image {
+        height: 200px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        transition: all 0.5s ease;
+      }
+
+      .city-card:hover .city-image {
+        height: 220px;
+      }
+
+      .city-rank {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background-color: var(--secondary-color);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        z-index: 2;
+      }
+
+      .visitors {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 5px 15px;
+        border-top-left-radius: 10px;
+        font-size: 0.9rem;
+        z-index: 2;
+      }
+
+      .city-content {
+        padding: 1.5rem;
+      }
+
+      .city-name {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--primary-color);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .country {
+        font-size: 1rem;
+        color: #666;
+        margin-bottom: 1rem;
+      }
+
+      .description {
+        font-size: 0.95rem;
+        color: #555;
+        line-height: 1.6;
+      }
+
+      .flag {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 4rem;
+        padding: 2rem 0;
+        color: #666;
+        border-top: 1px solid #eee;
+      }
+
+      .filters {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+      }
+
+      .filter-btn {
+        background-color: white;
+        border: 2px solid var(--primary-color);
+        color: var(--primary-color);
+        padding: 0.5rem 1.5rem;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: var(--transition);
+        font-weight: 600;
+      }
+
+      .filter-btn:hover, .filter-btn.active {
+        background-color: var(--primary-color);
+        color: white;
+      }
+
+      .stats {
+        position: relative;
+        border-radius: 10px;
+        margin-bottom: 3rem;
+        box-shadow: var(--shadow);
+        height: 300px;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .stats-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80') center/cover;
+        z-index: 0;
+        transition: all 0.5s ease;
+      }
+
+      .stats:hover .stats-bg {
+        transform: scale(1.05);
+      }
+
+      .stats-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to right, rgba(42, 57, 144, 0.85), rgba(74, 105, 189, 0.7));
+        z-index: 1;
+      }
+
+      .stats-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        justify-content: space-around;
+        width: 100%;
+        padding: 2rem;
+        color: white;
+      }
+
+      .stat-item {
+        text-align: center;
+        min-width: 200px;
+      }
+
+      .stat-value {
+        font-size: 3rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      .stat-label {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .image-gallery {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin: 3rem 0;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .gallery-item {
+        height: 200px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        overflow: hidden;
+      }
+
+      .gallery-item:hover {
+        transform: scale(1.05);
+        z-index: 2;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .gallery-item::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 50%;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+
+      .gallery-item:hover::after {
+        opacity: 1;
+      }
+
+      .gallery-item-caption {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        color: white;
+        font-weight: bold;
+        z-index: 2;
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+
+      .gallery-item:hover .gallery-item-caption {
+        opacity: 1;
+        transform: translateY(-10px);
+      }
+
+      .section-title {
+        text-align: center;
+        margin: 3rem 0 2rem;
+        font-size: 2rem;
+        color: var(--primary-color);
+        position: relative;
+        display: inline-block;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 3px;
+        background-color: var(--secondary-color);
+        border-radius: 2px;
+      }
+
+      @media (max-width: 768px) {
+        .cities-grid {
+          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        }
+        
+        .stats-content {
+          flex-direction: column;
+          align-items: center;
+          gap: 2rem;
+        }
+        
+        h1 {
+          font-size: 2.2rem;
+        }
+
+        .image-gallery {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      /* Animation */
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(50px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .city-card:nth-child(1) { animation-delay: 0.1s; }
+      .city-card:nth-child(2) { animation-delay: 0.2s; }
+      .city-card:nth-child(3) { animation-delay: 0.3s; }
+      .city-card:nth-child(4) { animation-delay: 0.4s; }
+      .city-card:nth-child(5) { animation-delay: 0.5s; }
+      .city-card:nth-child(6) { animation-delay: 0.6s; }
+      .city-card:nth-child(7) { animation-delay: 0.7s; }
+      .city-card:nth-child(8) { animation-delay: 0.8s; }
+      .city-card:nth-child(9) { animation-delay: 0.9s; }
+      .city-card:nth-child(10) { animation-delay: 1s; }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="moving-bg"></div>
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="container">
+        <h1>Top Places Visited in 2025</h1>
+        <p>Discover the world's most popular destinations and plan your next unforgettable journey with our comprehensive travel guides.</p>
+        <a href="{{ url_for('home') }}" class="cta-btn">Explore Destinations</a>
+      </div>
+    </section>
+
+    <!-- Rest of the content -->
+    <div class="container">
+      <section class="stats">
+        <div class="stats-bg"></div>
+        <div class="stats-overlay"></div>
+        <div class="stats-content">
+          <div class="stat-item">
+            <div class="stat-value">166.9M</div>
+            <div class="stat-label">Total Visitors</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">10</div>
+            <div class="stat-label">Top Cities</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">6</div>
+            <div class="stat-label">Countries</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">26.6M</div>
+            <div class="stat-label">Most Visitors (Hong Kong)</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="filters">
+        <button class="filter-btn active" data-region="all">All Regions</button>
+        <button class="filter-btn" data-region="asia">Asia</button>
+        <button class="filter-btn" data-region="europe">Europe</button>
+        <button class="filter-btn" data-region="america">Americas</button>
+      </div>
+
+      <div class="cities-grid" id="citiesGrid">
+        <!-- City cards will be inserted here by JavaScript -->
+      </div>
+
+      <h2 class="section-title">Discover Amazing Destinations</h2>
+      
+      <div class="image-gallery">
+        <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1480796927426-f609979314bd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')">
+          <div class="gallery-item-caption">Tokyo Skyline</div>
+        </div>
+        <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1526129318478-62ed807ebdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')">
+          <div class="gallery-item-caption">London Eye</div>
+        </div>
+        <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')">
+          <div class="gallery-item-caption">Paris at Night</div>
+        </div>
+        <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1518391846015-55a9cc003b25?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')">
+          <div class="gallery-item-caption">New York Streets</div>
+        </div>
+      </div>
+
+      <footer>
+        <p>© 2025 Global Tourism Data | Updated February 2025</p>
+      </footer>
+    </div>
+
+    <script>
+      // City data
+      const cities = [
+        {
+          name: "Hong Kong",
+          country: "China",
+          region: "asia",
+          visitors: 26.6,
+          description: "Leading with 26.6 million international visitors, Hong Kong captivates with its dynamic blend of modernity and tradition.",
+          image: "https://images.unsplash.com/photo-1536599018102-9f803c140fc1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          flag: "https://flagcdn.com/w40/cn.png"
+        },
+        {
+          name: "Tokyo",
+          country: "Japan",
+          region: "asia",
+          visitors: 21.2,
+          description: "Attracting 21.2 million tourists, Tokyo offers a unique mix of ancient temples, cutting-edge technology, and breathtaking natural landscapes.",
+          image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          flag: "https://flagcdn.com/w40/jp.png"
+        },
+        {
+          name: "London",
+          country: "United Kingdom",
+          region: "europe",
+          visitors: 19.2,
+          description: "Welcoming 19.2 million visitors, London remains a global hub for culture, history, and entertainment.",
+          image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          flag: "https://flagcdn.com/w40/gb.png"
+        },
+        {
+          name: "Singapore",
+          country: "Singapore",
+          region: "asia",
+          visitors: 16.6,
+          description: "Hosting 16.6 million travelers, Singapore impresses with its lush green spaces, futuristic architecture, and diverse culinary scene.",
+          image: "https://images.unsplash.com/photo-1565967511849-76a60a516170?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          flag: "https://flagcdn.com/w40/sg.png"
+        },
+        {
+          name: "Macau",
+          country: "China",
+          region: "asia",
+          visitors: 15.4,
+          description: "Drawing 15.4 million visitors, Macau is renowned for its unique blend of Portuguese heritage and vibrant casino industry.",
+          image: "https://i.ytimg.com/vi/WTZFuhfUd1U/maxresdefault.jpg",
+          flag: "https://flagcdn.com/w40/cn.png"
+        },
+        {
+          name: "Seoul",
+          country: "South Korea",
+          region: "asia",
+          visitors: 14.9,
+          description: "Attracting 14.9 million tourists, Seoul boasts a fascinating mix of traditional palaces, K-pop culture, and modern cityscapes.",
+          image: "https://wallpaperaccess.com/full/3055126.jpg",
+          flag: "https://flagcdn.com/w40/kr.png"
+        },
+        {
+          name: "Paris",
+          country: "France",
+          region: "europe",
+          visitors: 14.4,
+          description: "Welcoming 14.4 million visitors, Paris enchants with its art, fashion, and iconic landmarks like the Eiffel Tower.",
+          image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          flag: "https://flagcdn.com/w40/fr.png"
+        },
+        {
+          name: "New York City",
+          country: "USA",
+          region: "america",
+          visitors: 12.7,
+          description: "Hosting 12.7 million tourists, the Big Apple offers an unparalleled mix of culture, cuisine, and iconic sights.",
+          image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          flag: "https://flagcdn.com/w40/us.png"
+        },
+        {
+          name: "Shenzhen",
+          country: "China",
+          region: "asia",
+          visitors: 12.6,
+          description: "Drawing 12.6 million visitors, Shenzhen is a rapidly growing metropolis known for its shopping and modern attractions.",
+          image: "https://images.unsplash.com/photo-1522623349500-de37a56ea2a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          flag: "https://flagcdn.com/w40/cn.png"
+        },
+        {
+          name: "Kuala Lumpur",
+          country: "Malaysia",
+          region: "asia",
+          visitors: 12.3,
+          description: "Attracting 12.3 million travelers, Kuala Lumpur offers a rich cultural tapestry and impressive skyscrapers.",
+          image: "https://images.unsplash.com/photo-1596422846543-75c6fc197f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          flag: "https://flagcdn.com/w40/my.png"
+        }
+      ];
+
+      // Function to render city cards
+      function renderCities(filteredCities = cities) {
+        const citiesGrid = document.getElementById('citiesGrid');
+        citiesGrid.innerHTML = '';
+        
+        filteredCities.forEach((city, index) => {
+          const cityCard = document.createElement('div');
+          cityCard.className = 'city-card';
+          
+          cityCard.innerHTML = `
+            <div class="city-image" style="background-image: url('${city.image}')">
+              <div class="city-rank">${index + 1}</div>
+              <div class="visitors">${city.visitors}M visitors</div>
+            </div>
+            <div class="city-content">
+              <h2 class="city-name">
+                <img src="${city.flag}" alt="${city.country} flag" class="flag">
+                ${city.name}
+              </h2>
+              <div class="country">${city.country}</div>
+              <p class="description">${city.description}</p>
+            </div>
+          `;
+          
+          citiesGrid.appendChild(cityCard);
+        });
+      }
+
+      // Filter functionality
+      const filterButtons = document.querySelectorAll('.filter-btn');
+      filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          // Update active button
+          filterButtons.forEach(btn => btn.classList.remove('active'));
+          button.classList.add('active');
+          
+          // Filter cities
+          const region = button.getAttribute('data-region');
+          let filteredCities = cities;
+          
+          if (region !== 'all') {
+            filteredCities = cities.filter(city => city.region === region);
+          }
+          
+          renderCities(filteredCities);
+        });
+      });
+
+      // Explore button functionality
+      document.querySelector('.cta-btn').addEventListener('click', () => {
+        document.querySelector('.cities-grid').scrollIntoView({ 
+          behavior: 'smooth' 
+        });
+      });
+
+      // Gallery item hover effect enhancement
+      const galleryItems = document.querySelectorAll('.gallery-item');
+      galleryItems.forEach(item => {
+        item.addEventListener('mouseenter', () => {
+          galleryItems.forEach(otherItem => {
+            if (otherItem !== item) {
+              otherItem.style.opacity = '0.7';
+              otherItem.style.transform = 'scale(0.95)';
+            }
+          });
+        });
+        
+        item.addEventListener('mouseleave', () => {
+          galleryItems.forEach(otherItem => {
+            otherItem.style.opacity = '1';
+            otherItem.style.transform = 'scale(1)';
+          });
+        });
+      });
+
+      // Initial render
+      renderCities();
+    </script>
+  </body>
+</html>

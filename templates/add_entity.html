@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add {{ entity_type }}</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .form-container {
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 400px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        input[type="file"] {
+            margin-bottom: 1rem;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .back-button {
+            background: #6c757d;
+        }
+        .back-button:hover {
+            background: #5a6268;
+        }
+        .existing-data {
+            margin-top: 2rem;
+        }
+        .existing-data h2 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        .existing-data ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .existing-data li {
+            background: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 0.5rem;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .delete-button {
+            background: #dc3545;
+            border: none;
+            padding: 8px 12px;
+            color: #fff;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 80px;
+            height: 35px;
+            text-align: center;
+        }
+        .delete-button:hover {
+            background: #c82333;
+        }
+    </style>
+    <script>
+        function fetchCities(countryId) {
+            if (countryId) {
+                fetch(`/get_cities/${countryId}`)
+                    .then(response => response.json())
+                    .then(cities => {
+                        const citySelect = document.getElementById('city_id');
+                        citySelect.innerHTML = '<option value="">Select City</option>'; // Clear existing options
+                        cities.forEach(city => {
+                            const option = document.createElement('option');
+                            option.value = city[0];
+                            option.text = city[1];
+                            citySelect.appendChild(option);
+                        });
+                    });
+            } else {
+                const citySelect = document.getElementById('city_id');
+                citySelect.innerHTML = '<option value="">Select City</option>';
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Add {{ entity_type }}</h1>
+        <form method="POST" enctype="multipart/form-data">
+            <!-- If adding a city or restaurant, choose a country -->
+            {% if entity_type == 'city' or entity_type == 'restaurant' %}
+                <label for="country_id">Select Country:</label>
+                <select name="country_id" id="country_id" onchange="fetchCities(this.value)">
+                    <option value="">Select Country</option>
+                    {% for c in countries %}
+                        <option value="{{ c[0] }}">{{ c[1] }}</option>
+                    {% endfor %}
+                </select>
+            {% endif %}
+
+            <!-- If adding a restaurant, also choose a city -->
+            {% if entity_type == 'restaurant' %}
+                <label for="city_id">Select City:</label>
+                <select name="city_id" id="city_id">
+                    <option value="">Select City</option>
+                    {% for city in cities %}
+                        <option value="{{ city[0] }}">{{ city[1] }}</option>
+                    {% endfor %}
+                </select>
+            {% endif %}
+
+            <!-- Add code field for country and city -->
+            {% if entity_type == 'country' or entity_type == 'city' %}
+                <label for="code">Code:</label>
+                <input type="text" id="code" name="code" required>
+            {% endif %}
+
+            <!-- Add description field for city and restaurant -->
+            {% if entity_type == 'city' or entity_type == 'restaurant' %}
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" rows="4" required></textarea>
+            {% endif %}
+
+            <!-- Add link and average price fields for restaurant -->
+            {% if entity_type == 'restaurant' %}
+                <label for="link">Link:</label>
+                <input type="text" id="link" name="link" required>
+
+                <label for="avg_price">Average Price:</label>
+                <input type="text" id="avg_price" name="avg_price" required>
+            {% endif %}
+
+            <label for="name">
+                {% if entity_type == 'country' %}Country Name{% endif %}
+                {% if entity_type == 'city' %}City Name{% endif %}
+                {% if entity_type == 'restaurant' %}Restaurant Name{% endif %}
+            </label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="image">Image:</label>
+            <input type="file" id="image" name="image" required>
+
+            <button type="submit">Add {{ entity_type }}</button>
+        </form>
+        <button class="back-button" onclick="window.location.href='/'">Back</button>
+
+        <!-- Display existing data for reference with delete options -->
+        <div class="existing-data">
+            <h2>Existing Data</h2>
+            {% if entity_type == 'country' %}
+                <ul>
+                    {% for country in countries %}
+                        <li>
+                            {{ country[1] }} (Code: {{ country[2] }})
+                            <button class="delete-button" onclick="window.location.href='/delete_entity/country/{{ country[0] }}'">Delete</button>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% elif entity_type == 'city' %}
+                <ul>
+                    {% for city in cities %}
+                        <li>
+                            {{ city[1] }} (Code: {{ city[2] }}, Description: {{ city[3] }})
+                            <button class="delete-button" onclick="window.location.href='/delete_entity/city/{{ city[0] }}'">Delete</button>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% elif entity_type == 'restaurant' %}
+                <ul>
+                    {% for r in restaurants %}
+                        <li>
+                            {{ r[1] }} (Description: {{ r[2] }}, Link: {{ r[3] }}, Avg Price: {{ r[4] }})
+                            <button class="delete-button" onclick="window.location.href='/delete_entity/restaurant/{{ r[0] }}'">Delete</button>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

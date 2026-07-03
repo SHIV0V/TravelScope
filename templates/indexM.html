@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Map with Search & Admin Features</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        /* Home Widget CSS */
+        .home-widget {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            padding: 10px;
+            border-radius: 50%;
+            color: #007bff;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 1000; /* Ensure it's above the map */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .home-widget:hover {
+            background-color: rgba(255, 255, 255, 1);
+            transform: scale(1.1);
+        }
+
+        .home-widget i {
+            font-size: 20px;
+        }
+
+        /* Rest of your existing CSS */
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            background: #f4f4f9; 
+            margin: 0; 
+            padding: 0; 
+        }
+        h2 { 
+            color: #333; 
+            margin-top: 20px; 
+        }
+        #map { 
+            height: 500px; 
+            width: 90%; 
+            margin: 20px auto; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+        }
+        #roleSelector, #fromSearchBox, #toSearchBox, #searchButton, #distanceButton { 
+            margin: 5px; 
+            padding: 6px 10px; 
+            border-radius: 6px; 
+            border: 1px solid #ccc; 
+            font-size: 12px; 
+        }
+        #searchButton, #distanceButton { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+        }
+        #searchButton:hover, #distanceButton:hover { 
+            background: #0056b3; 
+        }
+        #formContainer, .modal { 
+            display: none; 
+            position: absolute; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); 
+            z-index: 1000; 
+        }
+        #formContainer { 
+            width: 300px; 
+            left: 50%; 
+            top: 10%; 
+            transform: translateX(-50%); 
+            text-align: left; 
+        }
+        input, textarea, button { 
+            width: 100%; 
+            margin-top: 10px; 
+            padding: 8px; 
+            border-radius: 6px; 
+            border: 1px solid #ccc; 
+            font-size: 14px; 
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+        }
+        button:hover { 
+            background: #0056b3; 
+        }
+        .modal { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0, 0, 0, 0.8); 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 2000; 
+        }
+        .modal-content { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            text-align: center; 
+            width: 90%; 
+            max-width: 500px; 
+            position: relative; 
+        }
+        .modal img { 
+            max-width: 100%; 
+            border-radius: 8px; 
+            margin-top: 10px; 
+        }
+        .close-btn, .delete-btn { 
+            position: absolute; 
+            top: -10px; 
+            right: 0px; 
+            background: red; 
+            color: white; 
+            border: none; 
+            padding: 8px 12px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            border-radius: 6px; 
+        }
+        .delete-btn { 
+            top: auto; 
+            bottom: 15px; 
+            right: 50%; 
+            transform: translateX(50%); 
+        }
+        #bucketList, #historyList { 
+            margin: 20px auto; 
+            width: 90%; 
+            text-align: left; 
+        }
+        #bucketList h3, #historyList h3 { 
+            color: #333; 
+        }
+        #bucketList ul, #historyList ul { 
+            list-style: none; 
+            padding: 0; 
+        }
+        #bucketList li, #historyList li { 
+            background: white; 
+            padding: 10px; 
+            margin: 5px 0; 
+            border-radius: 6px; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+            cursor: pointer; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        #bucketList li:hover, #historyList li:hover { 
+            background: #f0f0f0; 
+        }
+        .thumbs-up { 
+            cursor: pointer; 
+            color: #007bff; 
+            margin-left: 10px; 
+        }
+        .thumbs-up.liked { 
+            color: #ff4757; 
+        }
+        .gold-symbol { 
+            color: gold; 
+            font-size: 20px; 
+            margin-left: 10px; 
+        }
+        .remove-btn { 
+            color: red; 
+            cursor: pointer; 
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Home Widget -->
+    <nav>
+        <a href="{{ url_for('home') }}" class="home-widget"><i class="fas fa-home"></i></a>
+        
+    </nav>
+
+
+    <h2>Interactive Map</h2>
+    <label>Select Role:</label>
+    <select id="roleSelector" onchange="updateRole()">
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+    </select>
+
+    <input type="text" id="fromSearchBox" placeholder="From">
+    <input type="text" id="toSearchBox" placeholder="To">
+    <button onclick="searchLocation()">Search</button>
+
+    <div id="map"></div>
+
+    <div id="formContainer">
+        <h3>Add Location Details</h3>
+        <label>Name:</label>
+        <input type="text" id="locationName"><br>
+        <label>Description:</label>
+        <textarea id="locationDesc"></textarea><br>
+        <label>Upload Image:</label>
+        <input type="file" id="locationImage"><br>
+        <button onclick="saveLocation()">Save</button>
+        <button onclick="closeForm()">Cancel</button>
+    </div>
+
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">X</button>
+            <h2 id="modalTitle"></h2>
+            <p id="modalDescription"></p>
+            <img id="modalImage" src="" alt="Location Image">
+            <p id="distanceInfo"></p>
+            <button class="delete-btn" id="deleteBtn" onclick="deleteLocation()" style="display: none;">Delete</button>
+            <i class="fas fa-thumbs-up thumbs-up" onclick="toggleLike()"></i>
+            <span id="goldSymbol" class="gold-symbol" style="display: none;">A</span>
+        </div>
+    </div>
+
+    <div id="bucketList">
+        <h3>Bucket List</h3>
+        <ul id="bucketListItems"></ul>
+        <button onclick="calculateBucketListDistance()">Calculate Distance (2 or 3 points)</button>
+    </div>
+
+    <div id="historyList">
+        <h3>History</h3>
+        <ul id="historyItems"></ul>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <script>
+        let map = L.map('map').setView([51.505, -0.09], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        let currentRole = "user";
+        let markers = [];
+        let formContainer = document.getElementById('formContainer');
+        let currentMarker = null;
+        let userLocation = null;
+        let likedLocations = JSON.parse(localStorage.getItem('likedLocations')) || [];
+        let history = JSON.parse(localStorage.getItem('history')) || [];
+        let distanceLine = null;
+
+        // Load saved locations from localStorage
+        let savedLocations = JSON.parse(localStorage.getItem('locations')) || [];
+        savedLocations.forEach(loc => {
+            addMarker(loc.name, loc.desc, loc.imageUrl, loc.lat, loc.lng, false, loc.isSpecial);
+        });
+
+        // Load liked locations into bucket list
+        updateBucketList();
+
+        // Load history
+        updateHistory();
+
+        // Event listener to detect clicks outside the map
+        document.addEventListener('click', function (event) {
+            if (!event.target.closest('#map') && !event.target.closest('#formContainer') && !event.target.closest('.modal')) {
+                if (distanceLine) {
+                    map.removeLayer(distanceLine);
+                    distanceLine = null;
+                }
+            }
+        });
+
+        function updateRole() {
+            let selectedRole = document.getElementById("roleSelector").value;
+            if (selectedRole === "admin") {
+                let password = prompt("Enter Admin Password:");
+                if (password !== "2000") {
+                    alert("Incorrect password. Switching back to User.");
+                    document.getElementById("roleSelector").value = "user";
+                    return;
+                }
+            }
+            currentRole = selectedRole;
+        }
+
+        map.on('click', function (e) {
+            formContainer.style.display = 'block';
+            formContainer.dataset.lat = e.latlng.lat;
+            formContainer.dataset.lng = e.latlng.lng;
+        });
+
+        function saveLocation() {
+            let name = document.getElementById('locationName').value;
+            let desc = document.getElementById('locationDesc').value;
+            let fileInput = document.getElementById('locationImage');
+            let isSpecial = currentRole === "admin";
+            let imageUrl = '';
+
+            if (fileInput.files.length > 0) {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    imageUrl = e.target.result;
+                    addMarker(name, desc, imageUrl, formContainer.dataset.lat, formContainer.dataset.lng, true, isSpecial);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                addMarker(name, desc, '', formContainer.dataset.lat, formContainer.dataset.lng, true, isSpecial);
+            }
+
+            closeForm();
+        }
+
+        function addMarker(name, desc, imageUrl, lat, lng, save, isSpecial = false) {
+            let marker = L.marker([lat, lng]).addTo(map);
+            marker.details = { name, desc, imageUrl, lat, lng, isSpecial, liked: false };
+
+            marker.on('click', function () {
+                openModal(marker);
+            });
+
+            markers.push(marker);
+
+            if (save) {
+                let savedLocations = JSON.parse(localStorage.getItem('locations')) || [];
+                savedLocations.push(marker.details);
+                localStorage.setItem('locations', JSON.stringify(savedLocations));
+            }
+        }
+
+        function closeForm() {
+            formContainer.style.display = 'none';
+            document.getElementById('locationName').value = '';
+            document.getElementById('locationDesc').value = '';
+            document.getElementById('locationImage').value = '';
+        }
+
+        function openModal(marker) {
+            currentMarker = marker;
+            document.getElementById('modalTitle').innerText = marker.details.name;
+            document.getElementById('modalDescription').innerText = marker.details.desc;
+            document.getElementById('modalImage').src = marker.details.imageUrl || '';
+            document.getElementById('modalImage').style.display = marker.details.imageUrl ? 'block' : 'none';
+            document.getElementById('deleteBtn').style.display = (currentRole === "admin") ? 'block' : 'none';
+            document.getElementById('goldSymbol').style.display = marker.details.isSpecial ? 'inline' : 'none';
+            document.querySelector('.thumbs-up').classList.toggle('liked', marker.details.liked);
+
+            if (userLocation) {
+                let distance = map.distance(userLocation, [marker.details.lat, marker.details.lng]) / 1000;
+                document.getElementById('distanceInfo').innerText = `Distance: ${distance.toFixed(2)} km`;
+            }
+
+            document.getElementById('infoModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('infoModal').style.display = 'none';
+        }
+
+        function deleteLocation() {
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+                markers = markers.filter(marker => marker !== currentMarker);
+                localStorage.setItem('locations', JSON.stringify(markers.map(m => m.details)));
+                closeModal();
+            }
+        }
+
+        function toggleLike() {
+            if (currentMarker) {
+                currentMarker.details.liked = !currentMarker.details.liked;
+                document.querySelector('.thumbs-up').classList.toggle('liked', currentMarker.details.liked);
+
+                if (currentMarker.details.liked) {
+                    likedLocations.push(currentMarker.details.name);
+                } else {
+                    likedLocations = likedLocations.filter(name => name !== currentMarker.details.name);
+                }
+                localStorage.setItem('likedLocations', JSON.stringify(likedLocations));
+                updateBucketList();
+            }
+        }
+
+        function updateBucketList() {
+            let bucketList = document.getElementById('bucketListItems');
+            bucketList.innerHTML = likedLocations.map(name => {
+                let marker = markers.find(m => m.details.name === name);
+                return `
+                    <li onclick="zoomToLocation(${marker.details.lat}, ${marker.details.lng})">
+                        ${name}
+                        <span class="remove-btn" onclick="removeFromBucketList('${name}')">X</span>
+                    </li>
+                `;
+            }).join('');
+        }
+
+        function removeFromBucketList(name) {
+            likedLocations = likedLocations.filter(item => item !== name);
+            localStorage.setItem('likedLocations', JSON.stringify(likedLocations));
+            updateBucketList();
+        }
+
+        function zoomToLocation(lat, lng) {
+            map.setView([lat, lng], 14); // Zoom to the location
+        }
+
+        function searchLocation() {
+            let fromQuery = document.getElementById('fromSearchBox').value;
+            let toQuery = document.getElementById('toSearchBox').value;
+
+            if (!fromQuery || !toQuery) {
+                alert("Please enter both 'From' and 'To' locations.");
+                return;
+            }
+
+            Promise.all([
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${fromQuery}`).then(res => res.json()),
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${toQuery}`).then(res => res.json())
+            ]).then(([fromData, toData]) => {
+                if (fromData.length > 0 && toData.length > 0) {
+                    let from = fromData[0];
+                    let to = toData[0];
+
+                    // Add markers for "From" and "To"
+                    addMarker(from.display_name, "From Location", '', from.lat, from.lon, false);
+                    addMarker(to.display_name, "To Location", '', to.lat, to.lon, false);
+
+                    // Calculate distance
+                    let distance = map.distance([from.lat, from.lon], [to.lat, to.lon]) / 1000;
+
+                    // Add to history
+                    history.push({ from: from.display_name, to: to.display_name, distance });
+                    localStorage.setItem('history', JSON.stringify(history));
+                    updateHistory();
+
+                    // Draw line between "From" and "To"
+                    if (distanceLine) {
+                        map.removeLayer(distanceLine);
+                    }
+                    distanceLine = L.polyline(
+                        [[from.lat, from.lon], [to.lat, to.lon]],
+                        { color: 'blue' }
+                    ).addTo(map);
+
+                    // Zoom to fit both locations
+                    let bounds = L.latLngBounds([[from.lat, from.lon], [to.lat, to.lon]]);
+                    map.fitBounds(bounds);
+                } else {
+                    alert("One or both locations not found!");
+                }
+            });
+        }
+
+        function calculateBucketListDistance() {
+            if (likedLocations.length < 2) {
+                alert("Add at least 2 locations to the bucket list to calculate distance.");
+                return;
+            }
+
+            let selectedMarkers = markers.filter(marker => likedLocations.includes(marker.details.name));
+            if (selectedMarkers.length < 2) {
+                alert("No valid locations found in the bucket list.");
+                return;
+            }
+
+            let distances = [];
+            let latLngs = selectedMarkers.map(marker => [marker.details.lat, marker.details.lng]);
+
+            for (let i = 0; i < selectedMarkers.length - 1; i++) {
+                let distance = map.distance(
+                    [selectedMarkers[i].details.lat, selectedMarkers[i].details.lng],
+                    [selectedMarkers[i + 1].details.lat, selectedMarkers[i + 1].details.lng]
+                ) / 1000;
+                distances.push({
+                    from: selectedMarkers[i].details.name,
+                    to: selectedMarkers[i + 1].details.name,
+                    distance: distance.toFixed(2)
+                });
+            }
+
+            // Add to history
+            distances.forEach(d => history.push(d));
+            localStorage.setItem('history', JSON.stringify(history));
+            updateHistory();
+
+            // Draw lines between selected points
+            if (distanceLine) {
+                map.removeLayer(distanceLine);
+            }
+            distanceLine = L.polyline(latLngs, { color: 'blue' }).addTo(map);
+
+            // Zoom to fit all selected points
+            let bounds = L.latLngBounds(latLngs);
+            map.fitBounds(bounds);
+        }
+
+        function updateHistory() {
+            let historyList = document.getElementById('historyItems');
+            historyList.innerHTML = history.map((item, index) => `
+                <li>
+                    From: ${item.from}, To: ${item.to}, Distance: ${item.distance} km
+                    <span class="remove-btn" onclick="removeFromHistory(${index})">X</span>
+                </li>
+            `).join('');
+        }
+
+        function removeFromHistory(index) {
+            history.splice(index, 1);
+            localStorage.setItem('history', JSON.stringify(history));
+            updateHistory();
+        }
+
+        navigator.geolocation.getCurrentPosition(pos => userLocation = [pos.coords.latitude, pos.coords.longitude]);
+    </script>
+
+</body>
+</html>

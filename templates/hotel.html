@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Booking</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --background: rgba(240, 249, 255, 0.1);
+            --card-bg: rgba(255, 255, 255, 0.4);
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color:rgba(226, 232, 240, 0.34);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            object-fit: cover;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+
+        .booking-form {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transform: translateY(0);
+            transition: transform 0.2s ease-in-out;
+            backdrop-filter: blur(8px);
+        }
+
+        .booking-form:hover {
+            transform: translateY(-2px);
+        }
+
+        h2 {
+            color: var(--text-primary);
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-header p {
+            color: var(--text-secondary);
+            font-size: 0.975rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        input[type="text"],
+        input[type="date"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .date-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 640px) {
+            .date-inputs {
+                grid-template-columns: 1fr;
+            }
+
+            .booking-form {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Custom styles for date input */
+        input[type="date"] {
+            position: relative;
+            cursor: pointer;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            position: absolute;
+            right: 1rem;
+            cursor: pointer;
+        }
+
+        .back-button {
+            margin-top: 1rem;
+            background: var(--text-secondary);
+        }
+
+        .back-button:hover {
+            background: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+
+    <video autoplay muted loop class="video-background">
+        <source src="{{ url_for('static', filename='videos/bg7.mp4') }}" type="video/mp4">
+    </video>
+    <div class="overlay"></div>
+    
+    <div class="booking-form">
+        <div class="form-header">
+            <h2>🏨 Hotel Booking</h2>
+            <p>Find the best hotels for your stay</p>
+        </div>
+        <form id="hotelForm">
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" id="location" name="location" required placeholder="City, region, or hotel name" value="{{ city_name if city_name else '' }}">
+            </div>
+
+            <div class="date-inputs">
+                <div class="form-group">
+                    <label for="checkinDate">Check-in Date</label>
+                    <input type="date" id="checkinDate" name="checkinDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="checkoutDate">Check-out Date</label>
+                    <input type="date" id="checkoutDate" name="checkoutDate" required>
+                </div>
+            </div>
+
+            <button type="submit" id="searchButton">Search Hotels</button>
+            <button type="button" class="back-button" onclick="window.history.back()">Back</button>
+        </form>
+    </div>
+
+    <script>
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('checkinDate').min = today;
+        document.getElementById('checkoutDate').min = today;
+
+        // Update checkout date minimum when check-in date changes
+        document.getElementById('checkinDate').addEventListener('change', function() {
+            document.getElementById('checkoutDate').min = this.value;
+        });
+
+        // Form submission handling
+        document.getElementById('hotelForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const location = document.getElementById("location").value.trim();
+            const checkinDate = document.getElementById("checkinDate").value;
+            const checkoutDate = document.getElementById("checkoutDate").value;
+
+            // Validate required fields
+            if (!location || !checkinDate || !checkoutDate) {
+                alert("Please fill in all required fields.");
+                return;
+            }
+
+            // Generate the Booking.com URL
+            const bookingURL = `https://www.booking.com/searchresults.en-gb.html?ss=${encodeURIComponent(location)}&checkin=${checkinDate}&checkout=${checkoutDate}&group_adults=2&no_rooms=1&group_children=0`;
+
+            // Open the Booking.com URL in a new tab
+            window.open(bookingURL, '_blank');
+        });
+    </script>
+</body>
+</html>

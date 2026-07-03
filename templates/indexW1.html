@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.10/css/weather-icons.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: url('default.jpg') no-repeat center center/cover;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            transition: background 0.5s ease-in-out;
+            position: relative;
+        }
+        
+
+        .back-button {
+         position: absolute;
+         top: 20px;
+          left: 20px; /* Positioned on the left side */
+         background: rgba(255, 255, 255, 0.473);
+         padding: 8px 15px;
+         border-radius: 8px;
+         text-decoration: none;
+         font-size: 1rem;
+         font-weight: bold;
+         color: #333;
+         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+         display: flex;
+         align-items: center;
+         gap: 8px;
+         transition: transform 0.3s ease;
+        }
+
+        .back-button:hover {
+           transform: translateY(-2px);
+        }
+
+        .back-button svg {
+         width: 18px;
+         height: 18px;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.5);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            text-align: center;
+        }
+        h1 { margin-bottom: 1rem; }
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f075;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        .weather-display {
+            background: #f8fafc73;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .weather-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .weather-day {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.37);
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .weather-day h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+        .weather-icon { font-size: 2rem; color: #2563eb; }
+        .real-time {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .temperature {
+            font-size: 1.5rem; /* Increased font size */
+            font-weight: 700; /* Thicker font weight */
+            margin-bottom: 0.5rem;
+        }
+        .description {
+            font-weight: 600; /* Slightly bolder */
+            margin-bottom: 0.5rem;
+        }
+        .weather-symbol {
+            font-size: 1.5rem; /* Size of the symbol */
+            margin-top: 0.5rem;
+        }
+        @media (max-width: 500px) {
+            .weather-container { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <a href="javascript:history.back()" class="back-button">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Back
+    </a>
+    
+    <div class="container">
+        <h1>Weather Dashboard</h1>
+        <select id="citySelect">
+            <option value="">Select a City</option>
+            {% for city in cities %}
+                <option value="{{ city[0] }}" {% if city[0] == selected_city %}selected{% endif %}>{{ city[0] }}</option>
+            {% endfor %}
+        </select>
+        <div id="weatherDisplay" class="weather-display">
+            <div class="real-time" id="realTime">Select a city to view local time</div>
+            <div class="weather-container">
+                <div class="weather-day">
+                    <h3>Today</h3>
+                    <p class="temperature">--</p>
+                    <p class="description">--</p>
+                    <p class="weather-symbol">--</p>
+                    <p>Humidity: --%</p>
+                </div>
+                <div class="weather-day">
+                    <h3>Tomorrow</h3>
+                    <p class="temperature">--</p>
+                    <p class="description">--</p>
+                    <p class="weather-symbol">--</p>
+                    <p>Humidity: --%</p>
+                </div>
+                <div class="weather-day">
+                    <h3>Day After</h3>
+                    <p class="temperature">--</p>
+                    <p class="description">--</p>
+                    <p class="weather-symbol">--</p>
+                    <p>Humidity: --%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const citySelect = document.getElementById('citySelect');
+        const realTime = document.getElementById('realTime');
+        const body = document.body;
+        let timezoneOffset = 0; // Default timezone offset (UTC)
+
+        // Function to update real-time clock
+        function updateRealTime() {
+            const now = new Date();
+            const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000); // Convert to UTC
+            const localTime = new Date(utcTime + (timezoneOffset * 1000)); // Adjust for timezone
+            const timeString = localTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            realTime.textContent = `Local Time: ${timeString}`;
+        }
+
+        // Update the clock every second
+        setInterval(updateRealTime, 1000);
+
+        citySelect.addEventListener('change', function() {
+            const selectedCity = this.value;
+            if (!selectedCity) return;
+
+            // Fetch weather data for the selected city
+            fetch('/get_weather', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ city: selectedCity }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                // Update the weather display
+                const weatherDays = document.querySelectorAll('.weather-day');
+                weatherDays[0].innerHTML = `
+                    <h3>Today</h3>
+                    <p class="temperature">${data.today.temperature}°C</p>
+                    <p class="description">${data.today.description}</p>
+                    <p class="weather-symbol"><i class="wi ${getWeatherIcon(data.today.description)}"></i></p>
+                    <p>Humidity: ${data.today.humidity}%</p>
+                `;
+                weatherDays[1].innerHTML = `
+                    <h3>Tomorrow</h3>
+                    <p class="temperature">${data.tomorrow.temperature}°C</p>
+                    <p class="description">${data.tomorrow.description}</p>
+                    <p class="weather-symbol"><i class="wi ${getWeatherIcon(data.tomorrow.description)}"></i></p>
+                    <p>Humidity: ${data.tomorrow.humidity}%</p>
+                `;
+                weatherDays[2].innerHTML = `
+                    <h3>Day After</h3>
+                    <p class="temperature">${data.day_after_tomorrow.temperature}°C</p>
+                    <p class="description">${data.day_after_tomorrow.description}</p>
+                    <p class="weather-symbol"><i class="wi ${getWeatherIcon(data.day_after_tomorrow.description)}"></i></p>
+                    <p>Humidity: ${data.day_after_tomorrow.humidity}%</p>
+                `;
+
+                // Update the timezone offset
+                timezoneOffset = data.timezone_offset;
+
+                // Change the background image based on the city
+                fetch('/get_city_image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ city: selectedCity }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.image) {
+                        body.style.backgroundImage = `url(data:image/jpeg;base64,${data.image})`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching city image:', error);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching weather data:', error);
+            });
+        });
+
+        function getWeatherIcon(description) {
+            const weatherMap = {
+                'clear sky': 'wi-day-sunny',
+                'few clouds': 'wi-day-cloudy',
+                'scattered clouds': 'wi-cloud',
+                'broken clouds': 'wi-cloudy',
+                'shower rain': 'wi-showers',
+                'rain': 'wi-rain',
+                'light rain': 'wi-showers',
+                'thunderstorm': 'wi-thunderstorm',
+                'snow': 'wi-snow',
+                'mist': 'wi-fog',
+                'overcast clouds': 'wi-cloudy'
+            };
+            return weatherMap[description.toLowerCase()] || 'wi-day-sunny';
+        }
+
+        // Automatically trigger weather fetching if a city is pre-selected
+        document.addEventListener('DOMContentLoaded', function () {
+            const selectedCity = "{{ selected_city }}";
+            if (selectedCity) {
+                citySelect.value = selectedCity;
+                citySelect.dispatchEvent(new Event('change')); // Trigger the change event to fetch weather
+            }
+        });
+    </script>
+</body>
+</html>

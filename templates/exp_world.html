@@ -17,7 +17,7 @@
             overflow: hidden;
         }
 
-        /* Background Video */
+        
         .background-video {
             position: fixed;
             top: 0;
@@ -121,7 +121,7 @@
             font-weight: bold;
         }
 
-        /* Responsive adjustments */
+        
         @media (max-width: 1200px) {
             .destination-card {
                 width: calc(50% - 2rem);
@@ -137,7 +137,7 @@
 </head>
 <body>
 
-    <!-- Background Video -->
+   
     <video autoplay muted loop class="background-video">
         <source src="{{ url_for('static', filename='videos/bg5.mp4') }}" type="video/mp4">
         Your browser does not support the video tag.
@@ -153,7 +153,7 @@
             <p>Discover amazing destinations across the globe</p>
         </div>
 
-        <!-- Scrollable container for cards -->
+        
         <div class="cards-container">
             {% for country in countries %}
             <a href="{{ url_for('country_details', country_id=country.id) }}" class="destination-card">

@@ -58,7 +58,7 @@
         padding: 2rem;
       }
 
-      /* Hero Section */
+     
       .hero {
         height: 100vh;
         background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
@@ -116,7 +116,7 @@
         }
       }
 
-      /* Rest of the existing styles */
+      
       .cities-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -415,7 +415,7 @@
         }
       }
 
-      /* Animation */
+      
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(50px); }
         to { opacity: 1; transform: translateY(0); }
@@ -445,7 +445,7 @@
   </head>
   <body>
     <div class="moving-bg"></div>
-    <!-- Hero Section -->
+   
     <section class="hero">
       <div class="container">
         <h1>Top Places Visited in 2025</h1>
@@ -454,7 +454,7 @@
       </div>
     </section>
 
-    <!-- Rest of the content -->
+    
     <div class="container">
       <section class="stats">
         <div class="stats-bg"></div>
@@ -487,7 +487,7 @@
       </div>
 
       <div class="cities-grid" id="citiesGrid">
-        <!-- City cards will be inserted here by JavaScript -->
+        
       </div>
 
       <h2 class="section-title">Discover Amazing Destinations</h2>
@@ -513,7 +513,7 @@
     </div>
 
     <script>
-      // City data
+      
       const cities = [
         {
           name: "Hong Kong",
@@ -607,7 +607,7 @@
         }
       ];
 
-      // Function to render city cards
+      
       function renderCities(filteredCities = cities) {
         const citiesGrid = document.getElementById('citiesGrid');
         citiesGrid.innerHTML = '';
@@ -635,15 +635,15 @@
         });
       }
 
-      // Filter functionality
+      
       const filterButtons = document.querySelectorAll('.filter-btn');
       filterButtons.forEach(button => {
         button.addEventListener('click', () => {
-          // Update active button
+          
           filterButtons.forEach(btn => btn.classList.remove('active'));
           button.classList.add('active');
           
-          // Filter cities
+          
           const region = button.getAttribute('data-region');
           let filteredCities = cities;
           
@@ -655,14 +655,14 @@
         });
       });
 
-      // Explore button functionality
+      
       document.querySelector('.cta-btn').addEventListener('click', () => {
         document.querySelector('.cities-grid').scrollIntoView({ 
           behavior: 'smooth' 
         });
       });
 
-      // Gallery item hover effect enhancement
+      
       const galleryItems = document.querySelectorAll('.gallery-item');
       galleryItems.forEach(item => {
         item.addEventListener('mouseenter', () => {
@@ -682,7 +682,7 @@
         });
       });
 
-      // Initial render
+      
       renderCities();
     </script>
   </body>
